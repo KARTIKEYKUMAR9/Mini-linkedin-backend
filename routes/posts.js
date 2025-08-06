@@ -4,6 +4,10 @@ const auth = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
+app.get('/api/test', (req, res) => {
+  res.send("Backend working!");
+});
+
 // Create Post
 router.post('/', auth, async (req, res) => {
   const { content } = req.body;
