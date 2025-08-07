@@ -38,27 +38,21 @@ router.get('/', auth, async (req, res) => {
 
 
 // like route
-router.put('/:id/like',auth, async (req,res)=>{
-  try{
-    const post = await Post.findById(req.params.id);
-    const userId =req.user.id;
+// Toggle like
+router.post('/:id/like', authMiddleware, async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  const userId = req.user.id;
 
-    if(!post) return res.status(404).json({message: "Post not found"});
-
-    const alreadyLiked = post.likes.includes(userId);
-
-    if(alreadyLiked){
-      post.likes.pull(userId);
-    }else{
-      post.likes.push(userId);
-    }
-
-    await post.save();
-    res.json(post);
-  }catch(err){
-    res.status(500).json({message:"Server error"});
+  if (post.likes.includes(userId)) {
+    post.likes = post.likes.filter(id => id !== userId);
+  } else {
+    post.likes.push(userId);
   }
+
+  await post.save();
+  res.json(post);
 });
+
 
 
 // Get comments for a post
