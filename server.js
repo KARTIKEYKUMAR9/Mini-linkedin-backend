@@ -5,7 +5,10 @@ require('dotenv').config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://mini-linkedin-frontend-mocha.vercel.app/',
+  credentials: true,
+}));
 app.use(express.json());
 
 // DB Connection
