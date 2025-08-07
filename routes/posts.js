@@ -4,7 +4,7 @@ const auth = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.get('/api/test', (req, res) => {
+router.get('/test', (req, res) => {
   res.send("Backend working!");
 });
 
