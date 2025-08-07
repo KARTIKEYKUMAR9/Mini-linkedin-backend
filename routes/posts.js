@@ -40,17 +40,21 @@ router.get('/', auth, async (req, res) => {
 // like route
 // Toggle like
 router.post('/:id/like', auth, async (req, res) => {
+   try {
   const post = await Post.findById(req.params.id);
   const userId = req.user.id;
 
-  if (post.likes.includes(userId)) {
-    post.likes = post.likes.filter(id => id !== userId);
-  } else {
-    post.likes.push(userId);
-  }
+  if (!post.likes.includes(userId)) {
+      post.likes.push(userId);
+    } else {
+      post.likes = post.likes.filter(id => id !== userId);
+    }
 
   await post.save();
-  res.json(post);
+  res.status(200).json({ msg: 'Like status updated', likes: post.likes });
+   }catch (err) {
+    res.status(500).json({ msg: 'Server error' });
+  }
 });
 
 
