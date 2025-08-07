@@ -39,7 +39,7 @@ router.get('/', auth, async (req, res) => {
 
 // like route
 // Toggle like
-router.post('/:id/like', authMiddleware, async (req, res) => {
+router.post('/:id/like', auth, async (req, res) => {
   const post = await Post.findById(req.params.id);
   const userId = req.user.id;
 
