@@ -1,19 +1,20 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser'); // ✅ Import added
 require('dotenv').config();
 
 const app = express();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser()); // if you're using cookies
+app.use(cookieParser());
 
-
+// ✅ Corrected CORS origin (no trailing slash)
 app.use(cors({
-  origin: 'https://mini-linkedin-frontend-mocha.vercel.app/',
+  origin: 'https://mini-linkedin-frontend-mocha.vercel.app',
   credentials: true,
 }));
-app.use(express.json());
 
 // DB Connection
 mongoose.connect(process.env.MONGO_URI)
