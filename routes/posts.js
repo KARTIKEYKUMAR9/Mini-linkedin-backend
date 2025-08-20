@@ -1,100 +1,102 @@
-const express = require('express');
-const Post = require('../models/Post');
-const auth = require('../middleware/authMiddleware');
+const express = require("express");
+const Post = require("../models/Post");
+const auth = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.get('/test', (req, res) => {
+router.get("/test", (req, res) => {
   res.send("Backend working!");
 });
 
 // Create Post
-router.post('/', auth, async (req, res) => {
+router.post("/", auth, async (req, res) => {
   const { content } = req.body;
 
   try {
     const post = await Post.create({
       author: req.user,
-      content
+      content,
     });
     res.json(post);
   } catch {
-    res.status(500).json({ msg: 'Post creation failed' });
+    res.status(500).json({ msg: "Post creation failed" });
   }
 });
 
 // Get All Posts (Public Feed)
-router.get('/', auth, async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
     const posts = await Post.find()
-    .populate('author', 'name')
-    .populate('comments.author',"name")
-    .sort({ createdAt: -1 });
+      .populate("author", "name")
+      .populate("comments.author", "name")
+      .sort({ createdAt: -1 });
     res.json(posts);
   } catch {
-    res.status(500).json({ msg: 'Failed to fetch posts' });
+    res.status(500).json({ msg: "Failed to fetch posts" });
   }
 });
-
 
 // like route
 // Toggle like
-router.post('/:id/like', auth, async (req, res) => {
-   try {
-  const post = await Post.findById(req.params.id);
-  const userId = req.user.id;
+// Toggle like
+router.post("/:id/like", auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    const userId = req.user;
 
-  if (!post.likes.includes(userId)) {
-      post.likes.push(userId);
+    if (post.likes.includes(userId)) {
+      // unlike
+      post.likes = post.likes.filter((id) => id.toString() !== userId);
     } else {
-      post.likes = post.likes.filter(id => id !== userId);
+      // like
+      post.likes.push(userId);
     }
 
-  await post.save();
-  res.status(200).json({ msg: 'Like status updated', likes: post.likes });
-   }catch (err) {
-    res.status(500).json({ msg: 'Server error' });
+    await post.save();
+    res.json({ likes: post.likes }); // ✅ send array instead of count
+  } catch (err) {
+    res.status(500).json({ msg: "Server error" });
   }
 });
-
 
 
 // Get comments for a post
-router.get('/:id/comments', async (req, res) => {
+router.get("/:id/comments", async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id)
-      .populate('comments.author', 'name');
-    if (!post) return res.status(404).json({ message: 'Post not found' });
+    const post = await Post.findById(req.params.id).populate(
+      "comments.author",
+      "name"
+    );
+    if (!post) return res.status(404).json({ message: "Post not found" });
 
     res.json(post.comments);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch comments' });
+    res.status(500).json({ message: "Failed to fetch comments" });
   }
 });
 
-
 // comment route
 // Add a comment to a post
-router.post('/:id/comments', auth, async (req, res) => {
+router.post("/:id/comments", auth, async (req, res) => {
   try {
     const { text } = req.body;
     const post = await Post.findById(req.params.id);
 
-    if (!post) return res.status(404).json({ message: 'Post not found' });
+    if (!post) return res.status(404).json({ message: "Post not found" });
 
     post.comments.push({ text, author: req.user.id });
     await post.save();
 
     // Re-fetch the post to populate comments properly
-    const updatedPost = await Post.findById(req.params.id)
-      .populate('comments.author', 'name');
+    const updatedPost = await Post.findById(req.params.id).populate(
+      "comments.author",
+      "name"
+    );
 
     res.status(201).json(updatedPost.comments);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to add comment' });
+    res.status(500).json({ message: "Failed to add comment" });
   }
 });
-
-
 
 module.exports = router;
