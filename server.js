@@ -14,17 +14,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // ✅ Corrected CORS origin (no trailing slash)
-// app.use(cors({
-//   origin: 'https://mini-linkedin-frontend-mocha.vercel.app',
-//   credentials: true,
-// }));
-
-
-// for local server
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: 'https://mini-linkedin-frontend-mocha.vercel.app',
   credentials: true,
 }));
+
+
+// // for local server
+// app.use(cors({
+//   origin: 'http://localhost:5173',
+//   credentials: true,
+// }));
 
 
 // DB Connection
