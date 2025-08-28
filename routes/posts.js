@@ -14,11 +14,11 @@ router.post("/", auth, async (req, res) => {
 
   try {
     const post = await Post.create({
-      author: req.user, // req.user is just the userId from middleware
+      author: req.user, // req.user is userId from middleware
       content,
     });
 
-    // Re-fetch with populate so frontend gets author info directly
+    // Re-fetch with populate for frontend
     const newPost = await Post.findById(post._id)
       .populate("author", "name")
       .populate("comments.author", "name");
@@ -88,7 +88,7 @@ router.put("/:id", auth, async (req, res) => {
     res.json(updatedPost);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).json({ msg: "Server error" });
   }
 });
 
@@ -96,7 +96,6 @@ router.put("/:id", auth, async (req, res) => {
 router.delete("/:id", auth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
-    console.log(post);
     if (!post) return res.status(404).json({ msg: "Post not found" });
 
     if (post.author.toString() !== req.user) {
@@ -107,7 +106,7 @@ router.delete("/:id", auth, async (req, res) => {
     res.json({ success: true, msg: "Post removed" });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).json({ msg: "Server error" });
   }
 });
 
@@ -151,28 +150,28 @@ router.post("/:id/comments", auth, async (req, res) => {
   }
 });
 
-
 // Delete a comment
-router.delete("/:postId/comments/:commentId", auth, async (req,res)=>{
-  try{
-    const {postId,commentId} = req.params;
+router.delete("/:postId/comments/:commentId", auth, async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
     const post = await Post.findById(postId);
-    if(!post) return res.status(404).json({message: "Post not found"});
-    
-    const comment = post.comments.id(commentId);
-    if(comment) return res.status(404).json({message:"Comment not found"})
+    if (!post) return res.status(404).json({ message: "Post not found" });
 
-    if(comment.author.toString() !== req.user.id){
-      return res.status(401).json({message: "Not authorized"})
+    const comment = post.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    if (comment.author.toString() !== req.user) {
+      return res.status(401).json({ message: "Not authorized" });
     }
 
     comment.remove();
     await post.save();
 
-    res.json({msg:"Comment deleted"});
-  }catch(err){
+    res.json({ msg: "Comment deleted" });
+  } catch (err) {
     console.error(err.message);
-    res.status(500).json({message: "server error"});
+    res.status(500).json({ message: "Server error" });
   }
 });
+
 module.exports = router;
